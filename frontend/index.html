@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assistente de IA + Calculadora</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="chat">
+      <header class="chat__header">
+        <h1>Assistente de IA</h1>
+        <p>Pergunte algo. Uso uma <strong>calculadora</strong> para contas e um <strong>LLM</strong> para o resto.</p>
+      </header>
+
+      <section id="messages" class="chat__messages" aria-live="polite"></section>
+
+      <form id="chat-form" class="chat__form" autocomplete="off">
+        <input
+          id="message"
+          class="chat__input"
+          type="text"
+          placeholder="Ex.: quanto é 12 * 8?"
+          required
+        />
+        <button class="chat__send" type="submit">Enviar</button>
+      </form>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
