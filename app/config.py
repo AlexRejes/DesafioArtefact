@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Modelo usado por padrão quando GEMINI_MODEL não estiver definido.
-DEFAULT_GEMINI_MODEL = "gemini-2.0-flash"
+DEFAULT_GEMINI_MODEL = "gemini-2.5-flash-lite"
 
 
 class Settings:

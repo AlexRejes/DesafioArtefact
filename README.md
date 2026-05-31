@@ -81,7 +81,7 @@ Abra o `.env` e preencha a chave do Gemini (gere a sua em
 
 ```env
 GEMINI_API_KEY=sua_chave_aqui
-GEMINI_MODEL=gemini-2.0-flash
+GEMINI_MODEL=gemini-2.5-flash-lite
 ```
 
 > 💡 **Sem a chave o projeto continua funcionando** para perguntas
