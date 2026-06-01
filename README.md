@@ -12,10 +12,17 @@ overengineering (sem banco de dados, sem login, sem Docker, sem LangChain).
 ## ✨ O que ele faz
 
 - Pergunta **matemática** → resolvida pela **calculadora local** (sem chamar API).
+- Pergunta **sobre o criador / projetos / livros** → responde com base em
+  **documentos Markdown locais** + **LLM** (veja
+  [Superpoder adicional](#-superpoder-adicional-perfil-do-criador)).
 - Pergunta **geral** → encaminhada para o **LLM (Google Gemini)**.
 - A interface mostra qual ferramenta foi usada em cada resposta:
   - 🟢 `Ferramenta usada: Calculadora`
+  - 🟣 `Ferramenta usada: Sobre o criador`
   - 🔵 `Ferramenta usada: LLM`
+- Um botão de **⚙️ Configurações** abre um modal que mostra o provider atual e
+  se a API key está configurada — **sem nunca expor a chave** (veja
+  [Notas de segurança](#️-notas-de-segurança)).
 
 ---
 
@@ -29,7 +36,12 @@ ai-assistant-calculator/
 │   ├── config.py        # lê variáveis de ambiente (.env)
 │   ├── calculator.py    # calculadora segura (ast, sem eval)
 │   ├── decision.py      # decide: matemática ou LLM?
-│   └── llm.py           # integração com o Gemini via API REST
+│   ├── llm.py           # integração com o Gemini via API REST
+│   ├── creator_profile.py  # superpoder: perfil/projetos/livros (RAG simples)
+│   └── data/            # documentos Markdown usados como contexto
+│       ├── creator_profile.md
+│       ├── projects/    # lylla, legacy_of_ashes, jackfin
+│       └── books/       # eco_das_trevas, ciberseguranca_introducao_guerra_digital
 ├── frontend/
 │   ├── index.html       # chat centralizado
 │   ├── style.css        # estilos
@@ -148,6 +160,56 @@ A calculadora (`app/calculator.py`) **nunca usa `eval()`**. O processo é:
 
 ---
 
+## 🦸 Superpoder adicional: Perfil do criador
+
+Além de calculadora e LLM, o assistente tem uma **terceira rota**: responder
+perguntas sobre **Alexandre Rejes Coelho**, seus **projetos** e seus **livros**,
+usando **documentos Markdown locais** (em `app/data/`) como fonte de contexto.
+
+Funciona como um **RAG simples**: o backend detecta o assunto por palavras-chave,
+carrega **apenas os documentos relevantes** e pede ao Gemini que responda **com
+base neles**, instruído a **não inventar** e a dizer quando a informação não
+existe. **Sem embeddings, sem banco vetorial, sem LangChain e sem upload de
+arquivos** — só leitura de arquivos locais, mantendo o MVP simples.
+
+### Documentos
+
+```
+app/data/
+├── creator_profile.md
+├── projects/
+│   ├── lylla.md
+│   ├── legacy_of_ashes.md
+│   └── jackfin.md
+└── books/
+    ├── eco_das_trevas.md
+    └── ciberseguranca_introducao_guerra_digital.md
+```
+
+- Pergunta **geral sobre o Alexandre** → usa `creator_profile.md`.
+- Pergunta sobre um **projeto/livro específico** → `creator_profile.md` **+** o
+  documento daquele tema.
+- **Nunca** envia todos os documentos de uma vez (economia de tokens e foco).
+- Se os documentos não existirem ou o LLM não estiver configurado, o assistente
+  responde de forma **amigável**, sem quebrar.
+
+### Exemplos de perguntas
+
+- Quem criou este projeto?
+- Qual é a formação do Alexandre?
+- Quais tecnologias Alexandre usa?
+- Como funciona a Lylla?
+- O que é Legacy of Ashes?
+- O que é JackFin?
+- Sobre o que é Eco das Trevas?
+- O que aborda o livro CIBERSEGURANÇA: Introdução à Guerra Digital?
+
+> 🔒 **Segurança:** este modo continua usando a `GEMINI_API_KEY` **apenas no
+> backend**. Os documentos são lidos no servidor; o frontend nunca vê a chave
+> nem os arquivos brutos — só recebe a resposta final.
+
+---
+
 ## 💬 Exemplos para testar
 
 ### Perguntas matemáticas → Calculadora
@@ -193,6 +255,21 @@ Resposta esperada (exemplo):
 
 Há também `GET /health` para checar se o servidor está no ar e se o LLM está
 configurado.
+
+### Status de configuração (usado pelo botão ⚙️ Configurações)
+
+```bash
+curl http://localhost:8000/config/status
+```
+
+Resposta:
+
+```json
+{ "provider": "gemini", "llm_configured": true }
+```
+
+`llm_configured` é apenas um booleano: `true` quando existe `GEMINI_API_KEY` no
+backend, `false` caso contrário. **O valor da chave nunca é retornado.**
 
 ---
 
@@ -255,3 +332,20 @@ chamada ao Gemini é substituída por um *mock*. Eles cobrem:
 - O `.env` está no `.gitignore` para não vazar credenciais.
 - A calculadora aceita **apenas** operações matemáticas básicas; qualquer
   tentativa de executar código é rejeitada.
+
+### Por que o botão de Configurações é "somente leitura"
+
+O modal de configurações foi pensado para **melhorar a experiência sem abrir
+brechas de segurança**. Por isso:
+
+- O endpoint `GET /config/status` devolve **apenas** `provider` e o booleano
+  `llm_configured`. Ele **nunca** retorna o valor de `GEMINI_API_KEY`.
+- O frontend **não envia, não guarda e não exibe** a chave — ele só pergunta
+  "está configurada?" e mostra `Configurada` / `Não configurada`.
+- **Não existe** endpoint para gravar a chave ou escrever no `.env` pela
+  interface. Aceitar uma chave digitada no navegador a faria trafegar pela rede
+  e poderia acabar em logs, histórico ou cache — exatamente o que queremos
+  evitar. A configuração continua sendo feita só no `.env`, no servidor.
+
+Essa decisão mantém o projeto **simples** e dentro do escopo: a interface ganha
+um indicador útil, mas a credencial nunca sai do backend.

@@ -31,14 +31,18 @@ def is_configured() -> bool:
     return settings.llm_enabled
 
 
-def ask(message: str) -> str:
-    """Envia a pergunta ao Gemini e retorna o texto da resposta."""
+def generate(prompt: str) -> str:
+    """Envia um prompt completo ao Gemini e retorna o texto da resposta.
+
+    Usada tanto pela pergunta geral (`ask`) quanto pelo modo "Sobre o criador",
+    que monta o seu próprio prompt com os documentos locais como contexto.
+    """
     if not is_configured():
         raise LLMError("O LLM não está configurado.")
 
     url = _API_URL.format(model=settings.gemini_model)
     payload = {
-        "contents": [{"parts": [{"text": _SYSTEM_PREAMBLE + message}]}]
+        "contents": [{"parts": [{"text": prompt}]}]
     }
 
     try:
@@ -59,3 +63,8 @@ def ask(message: str) -> str:
         return data["candidates"][0]["content"]["parts"][0]["text"].strip()
     except (KeyError, IndexError, ValueError):
         raise LLMError("A resposta da IA veio em um formato inesperado.")
+
+
+def ask(message: str) -> str:
+    """Pergunta geral: adiciona um preâmbulo padrão e delega ao Gemini."""
+    return generate(_SYSTEM_PREAMBLE + message)

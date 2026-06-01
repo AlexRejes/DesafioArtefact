@@ -7,6 +7,7 @@
   --user: #334155;
   --calc: #16a34a;
   --llm: #2563eb;
+  --creator: #7c3aed;
 }
 
 * {
@@ -115,6 +116,10 @@ body {
   background: var(--llm);
 }
 
+.message__badge--creator {
+  background: var(--creator);
+}
+
 .chat__form {
   display: flex;
   gap: 0.6rem;
@@ -156,4 +161,127 @@ body {
 .chat__send:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Botão de configurações (engrenagem) no canto superior direito do chat. */
+.chat {
+  position: relative;
+}
+
+.settings-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: rgba(148, 163, 184, 0.12);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.settings-btn:hover {
+  background: rgba(148, 163, 184, 0.25);
+}
+
+.settings-btn svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+/* Modal de configurações. */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 50;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal {
+  width: 100%;
+  max-width: 360px;
+  padding: 1.5rem;
+  background: var(--card);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 14px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.modal__title {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.modal__row {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.modal__label {
+  color: var(--muted);
+}
+
+.status-pill {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(148, 163, 184, 0.2);
+  color: var(--text);
+}
+
+.status-pill--ok {
+  background: var(--calc);
+  color: #fff;
+}
+
+.status-pill--off {
+  background: #b91c1c;
+  color: #fff;
+}
+
+.modal__hint {
+  margin: 1rem 0 1.25rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.modal__hint code {
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  background: #0b1220;
+  color: var(--text);
+}
+
+.modal__close {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.modal__close:hover {
+  filter: brightness(1.1);
 }

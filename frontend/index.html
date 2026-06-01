@@ -8,6 +8,19 @@
   </head>
   <body>
     <main class="chat">
+      <button
+        id="settings-btn"
+        class="settings-btn"
+        type="button"
+        aria-label="Configurações"
+        title="Configurações"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+        </svg>
+      </button>
+
       <header class="chat__header">
         <h1>Assistente de IA</h1>
         <p>Pergunte algo. Uso uma <strong>calculadora</strong> para contas e um <strong>LLM</strong> para o resto.</p>
@@ -26,6 +39,30 @@
         <button class="chat__send" type="submit">Enviar</button>
       </form>
     </main>
+
+    <!-- Modal de configurações. Só leitura: mostra provider e status da chave. -->
+    <div id="settings-modal" class="modal-overlay" hidden>
+      <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <h2 id="settings-title" class="modal__title">Configurações</h2>
+
+        <p class="modal__row">
+          <span class="modal__label">Provider do LLM:</span>
+          <strong id="cfg-provider">—</strong>
+        </p>
+        <p class="modal__row">
+          <span class="modal__label">API key:</span>
+          <span id="cfg-status" class="status-pill">verificando…</span>
+        </p>
+
+        <p class="modal__hint">
+          A chave fica <strong>somente no backend</strong>. Para configurar,
+          defina <code>GEMINI_API_KEY</code> no arquivo <code>.env</code> e
+          reinicie o servidor. A chave nunca é enviada nem exibida no navegador.
+        </p>
+
+        <button id="settings-close" class="modal__close" type="button">Fechar</button>
+      </div>
+    </div>
 
     <script src="script.js"></script>
   </body>

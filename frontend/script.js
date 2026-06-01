@@ -60,7 +60,12 @@ function updateBotMessage(element, text, tool) {
 
   if (tool) {
     const badge = document.createElement("span");
-    const modifier = tool === "Calculadora" ? "calc" : "llm";
+    const modifierByTool = {
+      Calculadora: "calc",
+      "Sobre o criador": "creator",
+      LLM: "llm",
+    };
+    const modifier = modifierByTool[tool] || "llm";
     badge.className = `message__badge message__badge--${modifier}`;
     badge.textContent = `Ferramenta usada: ${tool}`;
     element.appendChild(badge);
@@ -68,3 +73,62 @@ function updateBotMessage(element, text, tool) {
 
   messages.scrollTop = messages.scrollHeight;
 }
+
+// --- Modal de configurações --------------------------------------------------
+// Apenas leitura: consulta /config/status para mostrar o provider e SE a chave
+// está configurada no backend. A chave em si nunca trafega pelo frontend.
+const CONFIG_URL =
+  location.protocol === "file:"
+    ? "http://localhost:8000/config/status"
+    : "/config/status";
+
+const settingsBtn = document.getElementById("settings-btn");
+const settingsModal = document.getElementById("settings-modal");
+const settingsClose = document.getElementById("settings-close");
+const cfgProvider = document.getElementById("cfg-provider");
+const cfgStatus = document.getElementById("cfg-status");
+
+async function loadConfigStatus() {
+  cfgStatus.textContent = "verificando…";
+  cfgStatus.className = "status-pill";
+
+  try {
+    const response = await fetch(CONFIG_URL);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    cfgProvider.textContent = data.provider;
+
+    if (data.llm_configured) {
+      cfgStatus.textContent = "Configurada";
+      cfgStatus.classList.add("status-pill--ok");
+    } else {
+      cfgStatus.textContent = "Não configurada";
+      cfgStatus.classList.add("status-pill--off");
+    }
+  } catch (error) {
+    cfgProvider.textContent = "—";
+    cfgStatus.textContent = "Erro ao consultar";
+    cfgStatus.classList.add("status-pill--off");
+  }
+}
+
+function openSettings() {
+  settingsModal.hidden = false;
+  loadConfigStatus();
+}
+
+function closeSettings() {
+  settingsModal.hidden = true;
+}
+
+settingsBtn.addEventListener("click", openSettings);
+settingsClose.addEventListener("click", closeSettings);
+
+// Fecha ao clicar no fundo escuro (fora do card) ou ao apertar Esc.
+settingsModal.addEventListener("click", (event) => {
+  if (event.target === settingsModal) closeSettings();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !settingsModal.hidden) closeSettings();
+});

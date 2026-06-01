@@ -18,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import calculator, decision, llm
+from . import calculator, creator_profile, decision, llm
 
 app = FastAPI(title="AI Assistant + Calculadora")
 
@@ -53,6 +53,16 @@ def health():
     return {"status": "ok", "llm_enabled": llm.is_configured()}
 
 
+@app.get("/config/status")
+def config_status():
+    """Status de configuração do LLM para a interface.
+
+    Informa apenas o provider atual e SE existe uma chave configurada no
+    backend (com base em GEMINI_API_KEY). Nunca retorna o valor da chave.
+    """
+    return {"provider": "gemini", "llm_configured": llm.is_configured()}
+
+
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest) -> ChatResponse:
     message = (request.message or "").strip()
@@ -69,7 +79,14 @@ def chat(request: ChatRequest) -> ChatResponse:
             # seguimos para o LLM como fallback.
             pass
 
-    # 2) Caminho do LLM (também serve de fallback).
+    # 2) Caminho "Sobre o criador": perfil, projetos e livros (documentos locais).
+    if creator_profile.is_creator_question(message):
+        return ChatResponse(
+            answer=creator_profile.answer(message),
+            tool="Sobre o criador",
+        )
+
+    # 3) Caminho do LLM (também serve de fallback).
     if not llm.is_configured():
         return ChatResponse(answer=_LLM_NOT_CONFIGURED, tool="LLM")
 
